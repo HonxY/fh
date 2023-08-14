@@ -40,7 +40,7 @@ public class SShapeCropMacroNew extends Macro<SShapeCropMacroNew.State> {
             if (crop == Config.CropEnum.NETHER_WART || crop == Config.CropEnum.CACTUS) {
                 pitch = (float) (0f + Math.random() * 0.5f);
             } else if (crop == Config.CropEnum.MELON || crop == Config.CropEnum.PUMPKIN) {
-                pitch = 28 + (float) (Math.random() * 2); //28-30
+                pitch = -59;
             } else {
                 pitch = (float) (2.8f + Math.random() * 0.5f);
             }
@@ -192,7 +192,7 @@ public class SShapeCropMacroNew extends Macro<SShapeCropMacroNew.State> {
                         mc.gameSettings.keyBindLeft,
                         mc.gameSettings.keyBindAttack,
                         MacroHandler.crop == Config.CropEnum.CACTUS && PlayerUtils.shouldPushBack() ? mc.gameSettings.keyBindBack : null,
-                        MacroHandler.crop != Config.CropEnum.CACTUS && MacroHandler.crop != Config.CropEnum.PUMPKIN && MacroHandler.crop != Config.CropEnum.MELON && PlayerUtils.shouldWalkForwards() ? mc.gameSettings.keyBindForward : null
+                        MacroHandler.crop != Config.CropEnum.CACTUS && MacroHandler.crop != Config.CropEnum.PUMPKIN && MacroHandler.crop != Config.CropEnum.MELON && PlayerUtils.shouldWalkForwards() ? mc.gameSettings.keyBindForward : true
                 );
                 break;
             case RIGHT:
@@ -200,7 +200,7 @@ public class SShapeCropMacroNew extends Macro<SShapeCropMacroNew.State> {
                         mc.gameSettings.keyBindRight,
                         mc.gameSettings.keyBindAttack,
                         MacroHandler.crop == Config.CropEnum.CACTUS && PlayerUtils.shouldPushBack() ? mc.gameSettings.keyBindBack : null,
-                        MacroHandler.crop != Config.CropEnum.CACTUS && MacroHandler.crop != Config.CropEnum.PUMPKIN && MacroHandler.crop != Config.CropEnum.MELON && PlayerUtils.shouldWalkForwards() ? mc.gameSettings.keyBindForward : null
+                        MacroHandler.crop != Config.CropEnum.CACTUS && MacroHandler.crop != Config.CropEnum.PUMPKIN && MacroHandler.crop != Config.CropEnum.MELON && PlayerUtils.shouldWalkForwards() ? mc.gameSettings.keyBindForward : true
                 );
                 break;
             case SWITCHING_LANE:
