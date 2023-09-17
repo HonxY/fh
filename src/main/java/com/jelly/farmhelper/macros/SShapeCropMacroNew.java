@@ -196,6 +196,7 @@ public class SShapeCropMacroNew extends Macro<SShapeCropMacroNew.State> {
             case LEFT:
                 KeyBindUtils.holdThese(
                         Macro.mc.gameSettings.keyBindLeft,
+                        Macro.mc.gameSettings.keyBindForward,
                         Macro.mc.gameSettings.keyBindAttack,
                         MacroHandler.crop == Config.CropEnum.CACTUS && PlayerUtils.shouldPushBack() ? Macro.mc.gameSettings.keyBindBack : null,
                         MacroHandler.crop != Config.CropEnum.CACTUS && MacroHandler.crop != Config.CropEnum.PUMPKIN && MacroHandler.crop != Config.CropEnum.MELON && PlayerUtils.shouldWalkForwards() ? Macro.mc.gameSettings.keyBindForward : null
@@ -204,6 +205,7 @@ public class SShapeCropMacroNew extends Macro<SShapeCropMacroNew.State> {
             case RIGHT:
                 KeyBindUtils.holdThese(
                         Macro.mc.gameSettings.keyBindRight,
+                        Macro.mc.gameSettings.keyBindForward,
                         Macro.mc.gameSettings.keyBindAttack,
                         MacroHandler.crop == Config.CropEnum.CACTUS && PlayerUtils.shouldPushBack() ? Macro.mc.gameSettings.keyBindBack : null,
                         MacroHandler.crop != Config.CropEnum.CACTUS && MacroHandler.crop != Config.CropEnum.PUMPKIN && MacroHandler.crop != Config.CropEnum.MELON && PlayerUtils.shouldWalkForwards() ? Macro.mc.gameSettings.keyBindForward : null
