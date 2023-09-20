@@ -88,7 +88,7 @@ public class SShapeCropMacroNew extends Macro<SShapeCropMacroNew.State> {
             return;
         }
 
-        if (isStuck()) return;
+        if (needAntistuck(changeLaneDirection != null && changeLaneDirection == ChangeLaneDirection.BACKWARD)) return;
 
         CropUtils.getTool();
 
@@ -127,6 +127,18 @@ public class SShapeCropMacroNew extends Macro<SShapeCropMacroNew.State> {
         switch (currentState) {
             case LEFT:
             case RIGHT: {
+                if (FarmHelper.gameState.leftWalkable && currentState == State.LEFT) {
+                    // Probably stuck in dirt, continue going left
+                    unstuck(false);
+                    changeState(State.LEFT);
+                    return;
+                }
+                if (FarmHelper.gameState.rightWalkable && currentState == State.RIGHT) {
+                    // Probably stuck in dirt, continue going right
+                    unstuck(true);
+                    changeState(State.RIGHT);
+                    return;
+                }
                 if (FarmHelper.gameState.frontWalkable) {
                     if (changeLaneDirection == ChangeLaneDirection.BACKWARD) {
                         // Probably stuck in dirt
@@ -144,6 +156,7 @@ public class SShapeCropMacroNew extends Macro<SShapeCropMacroNew.State> {
                     changeState(State.SWITCHING_LANE);
                     changeLaneDirection = ChangeLaneDirection.BACKWARD;
                 } else {
+                    LogUtils.sendDebug("This shouldn't happen, but it did...");
                     LogUtils.sendDebug("Can't go forward or backward!");
                     if (FarmHelper.gameState.leftWalkable) {
                         changeState(State.LEFT);
@@ -218,7 +231,7 @@ public class SShapeCropMacroNew extends Macro<SShapeCropMacroNew.State> {
                     } else if (FarmHelper.gameState.backWalkable) {
                         changeLaneDirection = ChangeLaneDirection.BACKWARD;
                     } else {
-                        unstuck();
+                        unstuck(false);
                         return;
                     }
                 }
