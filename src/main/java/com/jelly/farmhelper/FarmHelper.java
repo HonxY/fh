@@ -91,6 +91,9 @@ public class FarmHelper {
 
         if (FarmHelper.config.SShapeMacroType > 6) // fix for old config
             FarmHelper.config.SShapeMacroType = 6;
+
+        mc.gameSettings.pauseOnLostFocus = false;
+        mc.gameSettings.gammaSetting = 1000;
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

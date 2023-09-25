@@ -41,6 +41,7 @@ public class Autosell {
     private static int totalCount;
 
     private static final Clock sellClock = new Clock();
+    private static final Clock waitAfterDisable = new Clock();
 
     private static boolean soldToBZ = false;
     private static boolean soldSacks = false;
@@ -50,13 +51,20 @@ public class Autosell {
         SACKS
     }
 
-    public static boolean isEnabled() {
-        return enabled;
-    }
     public static final Clock waitBeforeSellClock = new Clock();
     public static final Clock stuckClock = new Clock();
 
+    public static boolean disableOnlyFlag = false;
+
+    public static boolean isEnabled() {
+        return (waitAfterDisable.isScheduled() && !waitAfterDisable.passed()) || enabled;
+    }
+
     public static void enable() {
+        enable(false);
+    }
+
+    public static void enable(boolean disableOnlyFlag) {
         if (FarmHelper.gameState.cookie == GameState.EffectState.OFF) {
             LogUtils.sendDebug("[AutoSell] You need a cookie for auto sell!");
             disableAndRestart();
@@ -71,17 +79,21 @@ public class Autosell {
         enabled = true;
         soldToBZ = false;
         soldSacks = false;
-        waitBeforeSellClock.schedule(3_500);
+        waitBeforeSellClock.schedule((long) (1_500 + Math.random() * 1_000));
         stuckClock.schedule(10_000);
-        MacroHandler.disableCurrentMacro();
+        Autosell.disableOnlyFlag = disableOnlyFlag;
+        if (!disableOnlyFlag)
+            MacroHandler.disableCurrentMacro();
     }
 
     public static void disableAndRestart() {
         LogUtils.sendDebug("[AutoSell] Finished");
         mc.thePlayer.closeScreen();
         mc.thePlayer.inventory.currentItem = hoeSlot;
-        enabled = false;
+        disableOnlyFlag = false;
         MacroHandler.enableCurrentMacro();
+        waitAfterDisable.schedule(2_500);
+        enabled = false;
     }
 
     public static void disableOnly() {
@@ -89,6 +101,7 @@ public class Autosell {
         LogUtils.sendDebug("[AutoSell] Disabled");
         mc.thePlayer.closeScreen();
         mc.thePlayer.inventory.currentItem = hoeSlot;
+        waitAfterDisable.schedule(2_500);
         enabled = false;
     }
 
@@ -122,9 +135,9 @@ public class Autosell {
 
         if (stuckClock.isScheduled() && stuckClock.passed()) {
             LogUtils.sendDebug("[AutoSell] Stuck in sell menu, restarting...");
-            disableAndRestart();
+            disableOnly();
             mc.thePlayer.closeScreen();
-            enable();
+            enable(disableOnlyFlag);
             return;
         }
 
@@ -159,7 +172,12 @@ public class Autosell {
                             currentState = State.SACKS;
                         } else {
                             LogUtils.sendDebug("[AutoSell] Sacks are empty! Exiting");
-                            disableAndRestart();
+                            if (disableOnlyFlag) {
+                                disableOnly();
+                                disableOnlyFlag = false;
+                            } else {
+                                disableAndRestart();
+                            }
                         }
                     }
                 } else if (PlayerUtils.getInventoryName() != null && !soldToBZ && !FarmHelper.config.sellToNPC && PlayerUtils.getInventoryName().contains("Bazaar")) {
@@ -182,7 +200,12 @@ public class Autosell {
                             currentState = State.SELL_INVENTORY;
                             soldToBZ = false;
                             sellClock.schedule(250);
-                            disableAndRestart();
+                            if (disableOnlyFlag) {
+                                disableOnly();
+                                disableOnlyFlag = false;
+                            } else {
+                                disableAndRestart();
+                            }
                             break;
                         } else if (mc.thePlayer.openContainer.getSlot(48).getStack().getDisplayName().contains("Sell Sacks Now")) {
                             LogUtils.sendDebug("[AutoSell] Detected Bazaar menu, selling item");
@@ -193,7 +216,12 @@ public class Autosell {
                         } else {
                             LogUtils.sendDebug("[AutoSell] Unknown Bazaar menu");
                             mc.thePlayer.closeScreen();
-                            disableAndRestart();
+                            if (disableOnlyFlag) {
+                                disableOnly();
+                                disableOnlyFlag = false;
+                            } else {
+                                disableAndRestart();
+                            }
                         }
                     }
                 } else if (PlayerUtils.getInventoryName() != null && !soldToBZ && !FarmHelper.config.sellToNPC && PlayerUtils.getInventoryName().contains("Are you sure?")) {
@@ -204,7 +232,12 @@ public class Autosell {
                 } else if (PlayerUtils.getInventoryName() != null && soldToBZ && !FarmHelper.config.sellToNPC && PlayerUtils.getInventoryName().contains("Are you sure?")) {
                     mc.thePlayer.closeScreen();
                     if (soldSacks)
-                        disableAndRestart();
+                        if (disableOnlyFlag) {
+                            disableOnly();
+                            disableOnlyFlag = false;
+                        } else {
+                            disableAndRestart();
+                        }
                 } else {
                     LogUtils.sendDebug("[AutoSell] Unknown menu " + PlayerUtils.getInventoryName());
                     mc.thePlayer.closeScreen();
@@ -214,7 +247,12 @@ public class Autosell {
             case SACKS:
                 if (sackSlot == -1) {
                     LogUtils.sendDebug("[AutoSell] No sack found! Exiting");
-                    disableAndRestart();
+                    if (disableOnlyFlag) {
+                        disableOnly();
+                        disableOnlyFlag = false;
+                    } else {
+                        disableAndRestart();
+                    }
                 } else if (!sackSlotsFilled()) {
                     LogUtils.sendDebug("[AutoSell] Sack item slots not returned, waiting");
                 } else if (mc.thePlayer.inventory.getFirstEmptyStack() == -1) {
@@ -256,7 +294,12 @@ public class Autosell {
         if (Keyboard.getEventKey() == Keyboard.KEY_ESCAPE) {
             if (enabled) {
                 LogUtils.sendDebug("[AutoSell] Exiting sell");
-                disableAndRestart();
+                if (disableOnlyFlag) {
+                    disableOnly();
+                    disableOnlyFlag = false;
+                } else {
+                    disableAndRestart();
+                }
             }
         }
     }
@@ -268,7 +311,7 @@ public class Autosell {
             name.startsWith("Nether Wart") || name.startsWith("Enchanted Nether Wart") || name.startsWith("Mutant Nether Wart") ||
             name.startsWith("Sugar Cane") || name.startsWith("Enchanted Sugar") || name.startsWith("Enchanted Sugar Cane") ||
             name.startsWith("Cropie") || name.startsWith("Squash") || name.startsWith("Fermento") ||
-            name.startsWith("Stone")) && !name.contains("Hoe");
+            name.startsWith("Stone") || name.contains("Iron Hoe"));
     }
 
     private static int getSack() {

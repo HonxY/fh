@@ -678,11 +678,34 @@ public class Config extends cc.polyfrost.oneconfig.config.Config {
 
 	// START VISITORS_MACRO
 
+	@Info(
+			text = "Visitors Macro tend to move your mouse, because of opening GUI's frequently. Be aware of that.",
+			type = InfoType.WARNING,
+			category = VISITORS_MACRO,
+			subcategory = "Visitors Macro",
+			size = 2
+	)
+	public static boolean visitorsMacroWarning;
+
 	@Switch(
 			name = "Enable visitors macro", category = VISITORS_MACRO, subcategory = "Visitors Macro",
 			description = "Enables visitors macro"
 	)
 	public boolean visitorsMacro = false;
+
+	@Number(
+			name = "Teleport to plot number: ", category = VISITORS_MACRO, subcategory = "Visitors Macro",
+			description = "Teleports to selected plot and tries to move to the visitors desk. Type 0 to disable",
+			min = 0, max = 50, size = 2
+	)
+	public int visitorsMacroTeleportToPlot = 0;
+
+	@Switch(
+			name = "Autosell before serving visitors", category = VISITORS_MACRO, subcategory = "Visitors Macro",
+			description = "Automatically sells crops before serving visitors"
+	)
+	public boolean visitorsMacroAutosellBeforeServing = false;
+
 	@Switch(
 			name = "Pause the visitors macro during Jacob's contests", category = VISITORS_MACRO, subcategory = "Visitors Macro",
 			description = "Pauses the visitors macro during Jacob's contests"
@@ -699,7 +722,7 @@ public class Config extends cc.polyfrost.oneconfig.config.Config {
 			text = "Trigger now"
 	)
 	public static Runnable triggerVisitorsMacro = () -> {
-		VisitorsMacro.triggerManually();
+		VisitorsMacro.enableMacro(true);
 	};
 	@Button(
 			name = "Stop the macro", category = VISITORS_MACRO, subcategory = "Visitors Macro",
@@ -852,6 +875,18 @@ public class Config extends cc.polyfrost.oneconfig.config.Config {
 			min = -30000000, max = 30000000
 	)
 	public int spawnPosZ = 0;
+
+	@Switch(
+			name = "Draw visitors desk location", category = VISITORS_MACRO, subcategory = "Drawings",
+			description = "Draws the visitors desk location"
+	)
+	public boolean drawVisitorsDeskLocation = true;
+
+	@Switch(
+			name = "Draw spawn location", category = VISITORS_MACRO, subcategory = "Drawings",
+			description = "Draws the spawn location"
+	)
+	public boolean drawSpawnLocation = true;
 
 	// END VISITORS_MACRO
 
@@ -1105,6 +1140,12 @@ public class Config extends cc.polyfrost.oneconfig.config.Config {
 	)
 	public float rewarpMaxDistance = 0.75f;
 
+	@Switch(
+			name = "Warp at spawn point after failing antistuck 3 times", category = EXPERIMENTAL, subcategory = "Miscellaneous",
+			description = "Warp at spawn point after failing antistuck 3 times"
+	)
+	public boolean rewarpAt3FailesAntistuck = true;
+
 	// END EXPERIMENTAL
 
 	@Number(name = "Config Version", category = EXPERIMENTAL, subcategory = "Experimental", min = 0, max = 1337)
@@ -1171,7 +1212,7 @@ public class Config extends cc.polyfrost.oneconfig.config.Config {
 		this.addDependency("pauseVisitorsMacroDuringJacobsContest", "visitorsMacro");
 		this.addDependency("onlyAcceptProfitableVisitors", "visitorsMacro");
 		this.addDependency("triggerVisitorsMacro", "visitorsMacro");
-		this.hideIf("triggerVisitorsMacro", () -> VisitorsMacro.isEnabled());
+		this.hideIf("triggerVisitorsMacro", VisitorsMacro::isEnabled);
 		this.hideIf("stopVisitorsMacro", () -> !VisitorsMacro.isEnabled());
 		this.addDependency("visitorsMacroCoinsThreshold", "visitorsMacro");
 		this.addDependency("visitorsMacroPriceManipulationMultiplier", "visitorsMacro");
@@ -1179,6 +1220,7 @@ public class Config extends cc.polyfrost.oneconfig.config.Config {
 		this.addDependency("visitorsAcceptRare", "visitorsMacro");
 		this.addDependency("visitorsAcceptLegendary", "visitorsMacro");
 		this.addDependency("visitorsAcceptSpecial", "visitorsMacro");
+		this.hideIf("visitorsMacroTeleportToPlot", () -> true);
 		this.hideIf("infoCookieBuffRequired", () -> LocationUtils.currentIsland != LocationUtils.Island.GARDEN || FarmHelper.gameState.cookie == GameState.EffectState.ON);
 		this.hideIf("infoDeskNotSet", () -> LocationUtils.currentIsland != LocationUtils.Island.GARDEN || VisitorsMacro.isDeskPosSet());
 
@@ -1207,11 +1249,14 @@ public class Config extends cc.polyfrost.oneconfig.config.Config {
 		this.hideIf("configVersion", () -> true);
 
 		registerKeyBind(openGuiKeybind, () -> FarmHelper.config.openGui());
-		registerKeyBind(debugKeybind, () -> {
-			if (MacroHandler.currentMacro != null) {
-				MacroHandler.currentMacro.unstuck(false);
-			}
+		registerKeyBind(toggleMacro, () -> {
+			MacroHandler.toggleMacro();
 		});
+//		registerKeyBind(debugKeybind, () -> {
+//			if (MacroHandler.currentMacro != null) {
+//				MacroHandler.currentMacro.unstuck(false);
+//			}
+//		});
 //		registerKeyBind(debugKeybind2, () -> FarmHelper.petSwapper.startMacro(true));
 		save();
 	}

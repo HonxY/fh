@@ -20,10 +20,8 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.lang3.tuple.Pair;
-import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
 
@@ -43,7 +41,6 @@ public class MacroHandler {
     private final Rotation rotation = new Rotation();
     public static long startTime = 0;
     public static boolean randomizing = false;
-    public static long startCounter = 0;
     public static boolean startingUp;
     public static CropEnum crop;
 
@@ -91,16 +88,6 @@ public class MacroHandler {
         }
     }
 
-    @SubscribeEvent
-    public void OnKeyPress(InputEvent.KeyInputEvent event) {
-        Keyboard.enableRepeatEvents(false);
-        if (FarmHelper.config.toggleMacro.isActive()) {
-            toggleMacro();
-        } else if (Keyboard.isKeyDown(Keyboard.KEY_J)) {
-            //debug
-        }
-    }
-
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public final void tick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
@@ -136,7 +123,17 @@ public class MacroHandler {
         } else if (isMacroing || (VisitorsMacro.triggeredManually && VisitorsMacro.isEnabled())) {
             disableMacro();
         } else {
-            enableMacro(force);
+            if (VisitorsMacro.isPlayerInsideBarn()) {
+                if (VisitorsMacro.isEnabled()) {
+                    VisitorsMacro.stopMacro();
+                } else if (VisitorsMacro.canEnableMacro(true)) {
+                    VisitorsMacro.enableMacro(true);
+                } else {
+                    LogUtils.sendError("You are inside barn, but not on desk position. Can't run visitors macro!");
+                }
+            } else {
+                enableMacro(force);
+            }
         }
     }
 
@@ -149,13 +146,6 @@ public class MacroHandler {
             LogUtils.sendError("You must be in the garden to start the macro!");
             if (!force)
                 return;
-        }
-        if (VisitorsMacro.isPlayerInsideBarn()) {
-            if (VisitorsMacro.isStandingOnDeskPos())
-                VisitorsMacro.triggerManually();
-            else
-                LogUtils.sendError("You must be outside the barn to start the macro!");
-            return;
         }
         if (!FarmHelper.config.macroType) {
             currentMacro = verticalCropMacro;
@@ -194,7 +184,7 @@ public class MacroHandler {
         ProfitCalculator.resetProfit();
         ProfitCalculator.startingPurse = -1;
 
-        startCounter = PlayerUtils.getCounter();
+//        startCounter = PlayerUtils.getCounter();
         enableCurrentMacro();
     }
 
@@ -212,6 +202,12 @@ public class MacroHandler {
         PetSwapper.reset();
         FailsafeNew.resetFailsafes();
         Utils.disablePingAlert();
+        if (Antistuck.unstuckThreadIsRunning) {
+            Antistuck.unstuckThreadIsRunning = false;
+            if (Antistuck.unstuckThreadInstance != null) {
+                Antistuck.unstuckThreadInstance.interrupt();
+            }
+        }
     }
 
     public static void disableCurrentMacro() {
