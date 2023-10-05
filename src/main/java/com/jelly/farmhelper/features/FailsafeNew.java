@@ -148,7 +148,7 @@ public class FailsafeNew {
             }
         }
         if (message.contains("to warp out! CLICK to warp now!")) {
-            Autosell.disableOnly();
+            AutoSellNew.stopMacro();
             VisitorsMacro.stopMacro();
             if (config.setSpawnBeforeEvacuate)
                 PlayerUtils.setSpawn();
@@ -366,7 +366,7 @@ public class FailsafeNew {
 
                 if (MacroHandler.currentMacro.enabled) return;
                 if (!cooldown.passed() || cooldown.isScheduled()) return;
-                if (Autosell.isEnabled()) return;
+                if (AutoSellNew.isEnabled()) return;
                 if (MacroHandler.startingUp) return;
                 if (!Scheduler.isFarming() && !JacobsContestHandler.jacobsContestTriggered) return;
                 if (!FarmHelper.config.pauseSchedulerDuringJacobsContest && JacobsContestHandler.jacobsContestTriggered) return;
@@ -378,6 +378,7 @@ public class FailsafeNew {
                 if (PetSwapper.isEnabled()) return;
                 if (evacuateState != EvacuateState.NONE) return;
                 if (!MacroHandler.currentMacro.isRewarpLocationSet()) return;
+                if (AntiAfk.getInstance().isEnabled()) return;
 
                 LogUtils.sendDebug("Resuming the macro...");
                 MacroHandler.enableCurrentMacro();
@@ -648,7 +649,7 @@ public class FailsafeNew {
                 LogUtils.sendFailsafeMessage("Desync detected, will solve this issue soon");
                 cooldown.schedule(1_500);
                 evacuateState = EvacuateState.EVACUATE_FROM_ISLAND;
-                Autosell.disableOnly();
+                AutoSellNew.stopMacro();
                 VisitorsMacro.stopMacro();
                 if (config.enableScheduler)
                     Scheduler.pause();

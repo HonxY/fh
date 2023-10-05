@@ -7,19 +7,16 @@ import com.jelly.farmhelper.commands.RewarpCommand;
 import com.jelly.farmhelper.config.Config;
 import com.jelly.farmhelper.features.*;
 import com.jelly.farmhelper.macros.MacroHandler;
-import com.jelly.farmhelper.remote.command.commands.SetSpeedCommand;
 import com.jelly.farmhelper.remote.DiscordBotHandler;
 import com.jelly.farmhelper.remote.WebsocketHandler;
-import com.jelly.farmhelper.utils.BlockUtils;
+import com.jelly.farmhelper.remote.command.commands.SetSpeedCommand;
 import com.jelly.farmhelper.utils.LocationUtils;
-import com.jelly.farmhelper.utils.LogUtils;
 import com.jelly.farmhelper.utils.TickTask;
 import com.jelly.farmhelper.utils.Utils;
 import com.jelly.farmhelper.world.GameState;
 import com.jelly.farmhelper.world.JacobsContestHandler;
 import lombok.SneakyThrows;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.BlockPos;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
@@ -27,7 +24,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.opengl.Display;
 
@@ -65,7 +61,7 @@ public class FarmHelper {
         MinecraftForge.EVENT_BUS.register(new MacroHandler());
         MinecraftForge.EVENT_BUS.register(new FailsafeNew());
         MinecraftForge.EVENT_BUS.register(new Antistuck());
-        MinecraftForge.EVENT_BUS.register(new Autosell());
+        MinecraftForge.EVENT_BUS.register(new AutoSellNew());
         MinecraftForge.EVENT_BUS.register(new Scheduler());
         MinecraftForge.EVENT_BUS.register(new AutoReconnect());
         MinecraftForge.EVENT_BUS.register(new AutoCookie());
@@ -84,6 +80,7 @@ public class FarmHelper {
         MinecraftForge.EVENT_BUS.register(new SetSpeedCommand());
         MinecraftForge.EVENT_BUS.register(petSwapper);
         MinecraftForge.EVENT_BUS.register(new WebsocketHandler());
+        MinecraftForge.EVENT_BUS.register(AntiAfk.getInstance());
         ClientCommandHandler.instance.registerCommand(new RewarpCommand());
         ClientCommandHandler.instance.registerCommand(new FarmHelperCommand());
 
